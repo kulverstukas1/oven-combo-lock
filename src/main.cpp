@@ -23,6 +23,11 @@ unsigned long lastInterruptTime;
 //------------------------------
 
 //------------------------------
+void softDelay(unsigned long millis) {
+  ESP.wdtFeed();
+  delay(millis);
+}
+//------------------------------
 void reset() {
   latchOpenTries = 0;
   FastLED.clear(true);
@@ -39,7 +44,7 @@ void showLoadingSeq() {
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CRGB::Blue;
     FastLED.show();
-    delay(LOADING_INTERVAL);
+    softDelay(LOADING_INTERVAL);
   }
 }
 //------------------------------
@@ -47,10 +52,10 @@ void openLidAlarm() {
   Serial.println("Cheater alert!");
   showComboState(false);
   digitalWrite(BUZZ_PIN, HIGH);
-  delay(600);
+  softDelay(600);
   FastLED.clear(true);
   digitalWrite(BUZZ_PIN, LOW);
-  delay(600);
+  softDelay(600);
 }
 //------------------------------
 void IRAM_ATTR checkLidStatus() {
@@ -74,7 +79,7 @@ void IRAM_ATTR checkCombination() {
   }
   bool comboOk = (digitalRead(COMBO_PIN) == LOW);
   FastLED.clear(true);
-  delay(LOADING_INTERVAL/2);
+  softDelay(LOADING_INTERVAL/2);
   showLoadingSeq();
   showComboState(comboOk);
   if (comboOk) {
@@ -83,7 +88,7 @@ void IRAM_ATTR checkCombination() {
   } else {
     Serial.println("Combination bad");
     digitalWrite(BUZZ_PIN, HIGH);
-    delay(BUZZER_INTERVAL);
+    softDelay(BUZZER_INTERVAL);
     digitalWrite(BUZZ_PIN, LOW);
     FastLED.clear(true);
   }
@@ -122,9 +127,9 @@ void loop() {
   if (openLatch && !isLidOpen) {
     if (latchOpenTries < MAX_LATCH_RETRIES) {
       digitalWrite(LOCK_PIN, HIGH);
-      delay(LOCK_OPEN_INTERVAL);
+      softDelay(LOCK_OPEN_INTERVAL);
       digitalWrite(LOCK_PIN, LOW);
-      delay(LOCK_OPEN_INTERVAL/2);
+      softDelay(LOCK_OPEN_INTERVAL/2);
       latchOpenTries += 1;
       if (digitalRead(LID_OPEN_PIN) == HIGH) reset();
     } else {
